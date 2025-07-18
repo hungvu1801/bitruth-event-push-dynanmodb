@@ -1,4 +1,4 @@
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 import os
 import pandas as pd
@@ -18,7 +18,8 @@ API_CREATE_GIFTS = os.getenv('API_CREATE_GIFTS')
 username = os.getenv('USERNAME_BT')
 password = os.getenv('PASSWORD_BT')
 
-def get_items(table_name: str, **attributes: dict) -> list:
+
+def get_items(table_name: str, **attributes) -> list:
     """
     Get items from DynamoDB table based on attributes.
     """
@@ -31,11 +32,13 @@ def get_items(table_name: str, **attributes: dict) -> list:
         if not table:
             print("Init table failed.")
             return
-        
+        # Use index if specified
+        index_name = attributes.get("index_name")
+
         if attributes.get("userId"):
-            key_condition_exp_lst.append(Attr("userId").eq(attributes.get("userId")))
+            key_condition_exp_lst.append(Key("userId").eq(attributes.get("userId")))
         if attributes.get("eventType"):
-            key_condition_exp_lst.append(Attr("eventType").eq(attributes.get("eventType")))
+            key_condition_exp_lst.append(Key("eventType").eq(attributes.get("eventType")))
         if attributes.get("index_name"):
             query_kwargs["IndexName"] = attributes.get("index_name")
         if attributes.get("rewardType"):
@@ -64,7 +67,7 @@ def get_items(table_name: str, **attributes: dict) -> list:
             if not items:
                 break
             
-            if "LastEvalueatedKey" not in response:
+            if "LastEvaluatedKey" not in response:
                 break
             query_kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         return items_get_lst

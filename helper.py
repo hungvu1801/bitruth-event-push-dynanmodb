@@ -30,6 +30,7 @@ def clear_console():
         os.system('cls')  # Command for Windows
 
 def get_json_from_url() -> List[Dict[str, Any]]:
+    
     url = os.getenv("HISTORY_URL")
     # Validate dates
     while True:
@@ -66,29 +67,44 @@ def get_json_from_url() -> List[Dict[str, Any]]:
     if not items:
         return []
     return items
-    
+
 
 def parse_data(
-        data: List[Dict[str, Any]], 
-        eventType: str, 
-        headUID:str, 
-        headGiftBox:str) -> List[Dict[str, Any]]:
-    """    
+        data: List[Dict[str, Any]],
+        is_api: bool = True,
+        eventType: str = "lucky-box-2",
+        headUID: str = None, 
+        headGiftBox: str = None,
+        giftType: str = "EXTERNAL_GIFT") -> List[Dict[str, Any]]:
+    """
     Parse data from the JSON response.
     [{
         "userId": "806",
         "giftBoxNumber": 10,
+        "giftType": "DAILY_CHECKIN",
         "eventType": "lucky-box-2"
     }, {} ... ]
     """
     parsed_data = []
+
     for item in data:
         try:
-            userId = str(item.get(headUID))
-            giftBoxNumber = int(item.get(headGiftBox))
+            if not is_api: # If data not from API
+                userId = str(item.get(headUID)) # This is for file input
+                giftBoxNumber = int(item.get(headGiftBox))
+            else:
+                userId = str(item.get("rootUserId")) # This is for API input
+                giftType = item.get("type", "EXTERNAL_GIFT").upper()  # Default to EXTERNAL_GIFT if not provided
+                if userId == '968':
+                    print(giftType)
+                # input()
+                giftBoxNumber = int(item.get("luckyBoxReceived"))
+            if not eventType:
+                eventType = "lucky-box-2" # Fallback
             parsed_item = {
                 "userId": userId,
                 "giftBoxNumber": giftBoxNumber,
+                "giftType": giftType,
                 "eventType": eventType,  # Default value
             }
             parsed_data.append(parsed_item)

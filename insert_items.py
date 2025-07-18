@@ -121,12 +121,17 @@ def create_gifts(file_name: str) -> list[GiftRecord]:
     return gifts
 
 def create_multiple_gifts_via_API_call(data: list) -> bool:
+    success_count = 0
+    fail_count = 0
     for item in data:
         response = create_one_gift_via_API_call(json_data=item)
         if response.status_code != 200 and response.status_code != 201:
             print(f"Failed to create gift for user {item['userId']}: {response.text if response else 'No response'}")
+            fail_count += 1
         else:
             print(f"Successfully created gift for user {item['userId']}")
+            success_count += 1
+    print(f"Total gifts success: {success_count}, failed: {fail_count}.")
 
 def create_one_gift_via_API_call(json_data: dict):
     try:
