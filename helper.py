@@ -43,7 +43,8 @@ def get_json_from_url() -> List[Dict[str, Any]]:
             datetime.fromisoformat(end_date)
             break
         except ValueError:
-            raise ValueError("Invalid date format. Use ISO format (YYYY-MM-DDTHH:MM:SS).")
+            print("Invalid date format. Use ISO format (YYYY-MM-DDTHH:MM:SS).")
+            break
     params = {
         "startDate": start_date,
         "endDate": end_date,

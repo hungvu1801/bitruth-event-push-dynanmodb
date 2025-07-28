@@ -74,4 +74,33 @@ def get_items(table_name: str, **attributes) -> list:
     except ClientError as e:
         print(f"Error fetching items: {e.response['Error']['Message']}")
         return []
-    
+
+def get_items_v2(
+        table_name: str, 
+        event_type: str, 
+        status: str, 
+        # index_name: str, 
+        limit: int = 1, 
+        scan_index_forward: bool = True) -> list:
+    try:
+        table = init_table(table_name=table_name)
+        query_kwargs = {
+            "KeyConditionExpression": "eventType = :eventType",
+            "FilterExpression": "#status = :status",
+            "ExpressionAttributeNames": {
+                "#status": "status"
+            },
+            "ExpressionAttributeValues": {
+                ":eventType": event_type,
+                ":status": status
+            },
+            "ScanIndexForward": scan_index_forward,
+            "Limit": limit
+        }
+        # if index_name:
+        #     query_kwargs["IndexName"] = index_name
+        response = table.query(**query_kwargs)
+        return response.get("Items", [])
+    except ClientError as e:
+            print(f"Error fetching items: {e.response['Error']['Message']}")
+            return []

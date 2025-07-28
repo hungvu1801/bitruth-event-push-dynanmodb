@@ -3,7 +3,7 @@ import json
 
 from insert_items import add_attribute_if_missing, create_gifts, create_multiple_gifts_via_API_call
 from helper import get_json_from_url, parse_data, save_data_to_file, read_data_from_file, clear_console, get_file_dir, read_headers_from_file
-from get_items import get_items
+from get_items import get_items, get_items_v2
 
 def print_menu() -> None:
     print("=" * 50)
@@ -26,6 +26,7 @@ def choose_option() -> int:
                 print("Invalid option. Please choose again.")
         except ValueError:
             print("Invalid input. Please enter a number.")
+            break
 
 def run_command(command: int) -> int:
     if command == 1:
@@ -61,13 +62,21 @@ def run_command(command: int) -> int:
     elif command == 0:
         return 0
     elif command == 3:
-        table_name = input("Please enter the table name:").strip()
-        if not table_name:
-            table_name = 'bitruth-lambda-service-api-gifts'
-        attributes = {
-            "eventType": "lucky-box-3"
-        }
-        get_items(table_name=table_name, attributes=attributes)
+        # table_name = input("Please enter the table name:").strip()
+        # if not table_name:
+        #     table_name = 'bitruth-lambda-service-api-gifts'
+        # attributes = {
+        #     "eventType": "lucky-box-3"
+        # }
+        items = get_items_v2(
+            table_name="bitruth-lambda-service-api-probability",
+            event_type="lucky-box-3",
+            status="active",
+            limit=1,
+            scan_index_forward=False,
+        )
+        print(items)
+        # get_items(table_name=table_name, attributes=attributes)
         return 1
     elif command == 4:
         items_full = get_json_from_url()
