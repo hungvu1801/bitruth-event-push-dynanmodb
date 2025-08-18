@@ -11,9 +11,9 @@ if __name__ == "__main__":
         items_parse = parse_data(
             data=items_full,
             is_api=True)
-        print(items_parse)
-        create_multiple_gifts_via_API_call(data=items_parse)
-        send_notification_discord(message=f"[LUCK BOX JOB]: Job Runs Successful At {convert_time_to_str(datetime.now())}")
+
+        result = create_multiple_gifts_via_API_call(data=items_parse)
+        send_notification_discord(message=f"""[LUCK BOX JOB]: Job Runs Successful At {convert_time_to_str(datetime.now())}. \nTotal users success: {result["success"]}, failed: {result["fail"]}.""")
     except Exception as e:
         print(e)
         send_notification_discord(message=f"[LUCK BOX JOB]: Job Fail At {convert_time_to_str(datetime.now())}: {e}")
