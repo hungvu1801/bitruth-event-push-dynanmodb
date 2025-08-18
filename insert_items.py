@@ -1,24 +1,19 @@
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
-import os
+
 import pandas as pd
 import json
-from dotenv import load_dotenv
+
 import requests
 from requests.auth import HTTPBasicAuth
 from typing import List
 import time
 
+from load_env import *
 from GiftRecord import GiftRecord
 from init_table import init_table
 
-load_dotenv()
-
-API_CREATE_GIFTS = os.getenv('API_CREATE_GIFTS')
-username = os.getenv('USERNAME_BT')
-password = os.getenv('PASSWORD_BT')
-
-def add_attribute_if_missing(table_name, attribute_name: str, update_val: str) -> None:
+def add_attribute_if_missing(table_name:str, attribute_name: str, update_val: str) -> None:
     """
     Add attribute if missing
     """
@@ -144,11 +139,12 @@ def create_one_gift_via_API_call(json_data: dict):
         # Make the POST request with basic authentication
         response = requests.post(
             url=API_CREATE_GIFTS,
-            auth=HTTPBasicAuth(username, password),
+            auth=HTTPBasicAuth(USERNAME_BT, PASSWORD_BT),
             headers=headers,
             json=json_data,
             timeout=30
         )
+        
         time.sleep(1)  # Sleep for 1 second to avoid rate limiting
         # Print response content
         if response.headers.get('content-type', '').startswith('application/json'):

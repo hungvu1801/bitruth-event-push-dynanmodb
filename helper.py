@@ -1,13 +1,12 @@
 import requests
 import json
-from dotenv import load_dotenv
 import os, sys
-from datetime import datetime
-from typing import Dict, Any, List, Tuple
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Any, List, Tuple, Optional
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
+from load_env import *
 
-load_dotenv()
 
 def get_file_dir() -> None:
     while True:
@@ -29,15 +28,24 @@ def clear_console():
     if sys.platform.startswith('win'):
         os.system('cls')  # Command for Windows
 
-def get_json_from_url() -> List[Dict[str, Any]]:
+def get_json_from_url(is_date_input: bool = True) -> List[Dict[str, Any]]:
     
-    url = os.getenv("HISTORY_URL")
     # Validate dates
     while True:
-        start_date = input("Enter start date (YYYY-MM-DDTHH:MM:SS) ie: 2025-07-10T23:59:59 : ").strip()
-        end_date = input("Enter start date (YYYY-MM-DDTHH:MM:SS) ie: 2025-07-10T23:59:59 : ").strip()
+
+        if is_date_input:
+            start_date = input("Enter start date (YYYY-MM-DDTHH:MM:SS) ie: 2025-07-10T23:59:59 : ").strip()
+            end_date = input("Enter start date (YYYY-MM-DDTHH:MM:SS) ie: 2025-07-10T23:59:59 : ").strip()
+        else:
+            start_date = get_saved_input_dates()
+            print(start_date)
+            end_date = convert_time_to_str(datetime.now(timezone.utc))
+            print(end_date)
+            write_to_file(end_date)
+
         if not start_date or not end_date:
             raise ValueError("Start date and end date must be provided.")
+        
         try:
             datetime.fromisoformat(start_date)
             datetime.fromisoformat(end_date)
@@ -50,12 +58,12 @@ def get_json_from_url() -> List[Dict[str, Any]]:
         "endDate": end_date,
     }
     headers = {
-        "Authorization": f"Bearer {os.getenv('USER_BEARER')}",
+        "Authorization": f"Basic {USER_BEARER_BT}",
         "Content-Type": "application/json"
     }
 
     reponse = requests.get(
-        url,
+        HISTORY_URL,
         headers=headers,
         params=params)
     if reponse.status_code != 200:
@@ -162,3 +170,35 @@ def get_input_from_user() -> dict:
         except Exception as e:
             print(f"Invalid input: {e}")
             continue
+
+def get_saved_input_dates() -> Optional[str]:
+    try:
+        last_run_str = read_saved_file()
+        last_run = parse_str_to_time(last_run_str) + timedelta(seconds=1)
+        start_date = convert_time_to_str(last_run)
+        return start_date
+    except Exception as e:
+        return None
+    
+def read_saved_file() -> Optional[str]:
+    if os.path.exists(STATE_FILE):
+        with open(STATE_FILE, "r") as f:
+            timestamp = f.read().strip()
+            print(timestamp)
+            if timestamp:
+                return timestamp
+            else:
+                return None
+    else:
+        raise FileNotFoundError(f"File {STATE_FILE} not found.")
+
+def write_to_file(time_str):
+    with open(STATE_FILE, "w") as wf:
+        wf.write(time_str)
+
+
+def convert_time_to_str(time_obj: datetime):
+    return datetime.strftime(time_obj, TIME_FORMAT)
+
+def parse_str_to_time(time_str: str):
+    return datetime.strptime(time_str, TIME_FORMAT)

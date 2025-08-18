@@ -7,3 +7,5 @@
 *.pyc
 
 .venv/*
+
+state_file.txt

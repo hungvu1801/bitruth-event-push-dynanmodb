@@ -12,11 +12,6 @@ import time
 from GiftRecord import GiftRecord
 from init_table import init_table
 
-load_dotenv()
-
-API_CREATE_GIFTS = os.getenv('API_CREATE_GIFTS')
-username = os.getenv('USERNAME_BT')
-password = os.getenv('PASSWORD_BT')
 
 
 def get_items(table_name: str, **attributes) -> list:
