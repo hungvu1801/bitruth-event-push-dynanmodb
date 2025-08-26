@@ -25,3 +25,31 @@ DYNAMODB_RESERVED_KEYWORDS = {
     "YEAR",
     "ZONE"
 }
+
+
+BINANCE_FEE_URL = "https://www.binance.com/bapi/capital/v2/public/capital/getNetworkCoinAll"
+
+
+HEADERS = {
+    "Host": "www.binance.com",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0",
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Referer": "https://www.binance.com/en/fee/cryptoFee",
+    "lang": "en",
+    "content-type": "application/json",
+    "clienttype": "web",
+    "devicelanguage": "en",
+    "language": "en_US",
+    "locale": "en_US",
+    "Origin": "https://www.binance.com",
+    "Connection": "keep-alive",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+    "Alt-Used": "www.bitget.com",
+    "Priority": "u=0",
+    "TE": "trailers"
+}
+

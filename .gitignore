@@ -9,3 +9,7 @@
 .venv/*
 
 state_file.txt
+
+ThisNotSecretKeyAtAll/*
+
+settings.py
