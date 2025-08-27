@@ -79,25 +79,17 @@ class GSheetService:
         # Load existing credentials if available
         if os.path.exists('ThisNotSecretKeyAtAll/token.json'):
             creds = Credentials.from_authorized_user_file('ThisNotSecretKeyAtAll/token.json', SCOPES)
-        if sys.platform.startswith('win'):
             
-            # If there are no (valid) credentials available, let the user log in
-            if not creds or not creds.valid:
-                if creds and creds.expired and creds.refresh_token:
-                    creds.refresh(Request())
-                else:
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        'ThisNotSecretKeyAtAll/credentials.json', SCOPES)
-                    creds = flow.run_local_server(port=0)
+        # If there are no (valid) credentials available, let the user log in
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'ThisNotSecretKeyAtAll/credentials.json', SCOPES)
+                creds = flow.run_local_server(port=0)
                 
-        else:
-            if not creds or not creds.valid:
-                if creds and creds.expired and creds.refresh_token:
-                    creds.refresh(Request())
-                else:
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        'ThisNotSecretKeyAtAll/credentials.json', SCOPES)
-                    creds = flow.run_console()
+
         # Save the credentials for the next run
         if creds:
             with open('ThisNotSecretKeyAtAll/token.json', 'w') as token:
