@@ -5,6 +5,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.auth.exceptions import GoogleAuthError
+import sys
 
 from settings import SCOPES
 from typing import Union, Optional, Dict, Any
@@ -78,20 +79,30 @@ class GSheetService:
         # Load existing credentials if available
         if os.path.exists('ThisNotSecretKeyAtAll/token.json'):
             creds = Credentials.from_authorized_user_file('ThisNotSecretKeyAtAll/token.json', SCOPES)
-        
-        # If there are no (valid) credentials available, let the user log in
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'ThisNotSecretKeyAtAll/credentials.json', SCOPES)
-                creds = flow.run_local_server(port=0)
+        if sys.platform.startswith('win'):
             
-            # Save the credentials for the next run
+            # If there are no (valid) credentials available, let the user log in
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+                else:
+                    flow = InstalledAppFlow.from_client_secrets_file(
+                        'ThisNotSecretKeyAtAll/credentials.json', SCOPES)
+                    creds = flow.run_local_server(port=0)
+                
+        else:
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+                else:
+                    flow = InstalledAppFlow.from_client_secrets_file(
+                        'ThisNotSecretKeyAtAll/credentials.json', SCOPES)
+                    creds = flow.run_console()
+        # Save the credentials for the next run
+        if creds:
             with open('ThisNotSecretKeyAtAll/token.json', 'w') as token:
                 token.write(creds.to_json())
-        
+            
         return creds
 
 class GSheetWrite:
