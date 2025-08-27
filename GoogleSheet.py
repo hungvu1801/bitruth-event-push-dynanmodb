@@ -1,6 +1,7 @@
 import os
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google.oauth2 import service_account
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -64,7 +65,7 @@ class GSheetService:
                 )
 
             _values = _result.get('values', [])
-
+            print(_values)
             last_row_index = -1 # Flag for not hit the last row
             for i in reversed(range(len(_values))):
                 if _values[i] and _values[i][0].strip():  # if not empty or just spaces
@@ -72,9 +73,19 @@ class GSheetService:
                     break
             return last_row_index
         except Exception as e:
+            print(f"Error in check check_last_value_in_column {e}")
             return -1
 
     def get_credentials(self) -> Credentials:
+        if os.path.exists('ThisNotSecretKeyAtAll/service-account-key.json'):
+            try:
+                creds = service_account.Credentials.from_service_account_file(
+                    'ThisNotSecretKeyAtAll/service-account-key.json')
+                return creds
+            except Exception as e:
+                print(f"Error getting credentials from service account: {e}")
+
+        # Fallback to OAuth2 user authentication
         creds = None
         # Load existing credentials if available
         if os.path.exists('ThisNotSecretKeyAtAll/token.json'):

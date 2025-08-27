@@ -7,7 +7,7 @@ import time
 
 from assets import BINANCE_FEE_URL, HEADERS
 from GoogleSheet import GSheetWrite, GSheetService
-from settings import BITRUTH_COINS, SPREADSHEET_ID
+from settings import BITRUTH_COINS, SPREADSHEET_ID, IS_GET_ALL
 
 @dataclass
 class CoinBase:
@@ -47,9 +47,13 @@ class CollectDataBinance:
 
     @staticmethod
     def filter_coins(coins: List[Dict[str, Any]]) -> Generator[Dict[str, Any], None, None]:
-        for coin in coins:
-            if coin["coin"].upper() in BITRUTH_COINS:
-                yield coin
+        if IS_GET_ALL:
+            for coin in coins:
+                if coin["coin"].upper() in BITRUTH_COINS:
+                    yield coin
+        else:
+            for coin in coins:
+                    yield coin
     
     def init_gsheetservice(self) -> Optional[GSheetWrite]:
         gservice = GSheetService()
@@ -60,8 +64,10 @@ class CollectDataBinance:
 
     def write_records_into_sheet(self, coins_generator):
         try:
-            range_name = f"{self.title}!A1"
+            range_name = f"{self.title}!A:A"
+            print(range_name)
             last_row = self.gwrite.gservice.check_last_value_in_column(self.gwrite.spreadSheetId, range_name)
+            print(f"last_row = {last_row}")
             
             # Write the header if needed
             if last_row == -1:
