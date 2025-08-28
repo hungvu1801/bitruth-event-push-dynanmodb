@@ -1,20 +1,14 @@
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
-import os
-import pandas as pd
-import json
-from dotenv import load_dotenv
-import requests
-from requests.auth import HTTPBasicAuth
-from typing import List
-import time
+from typing import List, Optional
+
 
 from GiftRecord import GiftRecord
 from init_table import init_table
 
 
 
-def get_items(table_name: str, **attributes) -> list:
+def get_items(table_name: str, **attributes) -> Optional[list]:
     """
     Get items from DynamoDB table based on attributes.
     """
@@ -68,7 +62,7 @@ def get_items(table_name: str, **attributes) -> list:
         return items_get_lst
     except ClientError as e:
         print(f"Error fetching items: {e.response['Error']['Message']}")
-        return []
+        return None
 
 def get_items_v2(
         table_name: str, 
@@ -76,8 +70,9 @@ def get_items_v2(
         status: str, 
         # index_name: str, 
         limit: int = 1, 
-        scan_index_forward: bool = True) -> list:
+        scan_index_forward: bool = True) -> Optional[list]:
     try:
+        items_get_lst = []
         table = init_table(table_name=table_name)
         query_kwargs = {
             "KeyConditionExpression": "eventType = :eventType",
@@ -94,8 +89,68 @@ def get_items_v2(
         }
         # if index_name:
         #     query_kwargs["IndexName"] = index_name
-        response = table.query(**query_kwargs)
-        return response.get("Items", [])
+        while True:
+            
+            response = table.query(**query_kwargs)
+            
+            items = response.get("Items", [])
+            if not items:
+                break
+            items_get_lst.extend(items)
+            if "LastEvaluatedKey" not in response:
+                break
+            query_kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+
+        return items_get_lst
     except ClientError as e:
-            print(f"Error fetching items: {e.response['Error']['Message']}")
-            return []
+        print(f"Error fetching items: {e.response['Error']['Message']}")
+        return None
+    
+def scan_items(
+        table_name: str, 
+        event_type: str, 
+        opened: str, 
+        limit: Optional[int]) -> Optional[list]:
+    
+    try:
+        items_get_lst = []
+        table = init_table(table_name=table_name)
+        
+        if not table:
+            print("Failed to initialize table.")
+            return None
+        
+        # Convert string input to proper boolean for DynamoDB comparison
+        # Since DynamoDB stores opened as boolean, we need to convert string input to boolean
+        opened_bool = opened.lower() == 'true'
+        
+        scan_kwargs = {
+            "FilterExpression": Attr("eventType").eq(event_type) & Attr("opened").eq(opened_bool),
+        }
+        if limit and limit > 0:
+            scan_kwargs["Limit"] = limit
+            
+        print(f"Scanning table '{table_name}' for eventType='{event_type}' and opened={opened_bool}")
+        if limit:
+            print(f"Limit set to: {limit}")
+        
+        while True:
+            
+            response = table.scan(**scan_kwargs)
+            
+            items = response.get("Items", [])
+            if not items:
+                break
+            items_get_lst.extend(items)
+            if "LastEvaluatedKey" not in response:
+                break
+            scan_kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+
+        print(f"Found {len(items_get_lst)} items matching the criteria.")
+        return items_get_lst
+    except ClientError as e:
+        print(f"Error fetching items: {e.response['Error']['Message']}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return None

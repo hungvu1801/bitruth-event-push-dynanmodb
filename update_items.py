@@ -3,12 +3,12 @@ from init_table import init_table
 from typing import Dict, Any, Optional, Union
 from assets import DYNAMODB_RESERVED_KEYWORDS
 
-def update_tbl_dydb(
+def update_items(
         table_name: str, 
         key: Dict[str, Any], 
         update_expression: str, 
         expression_values: Dict[str, Any],
-        expression_names: Optional[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+        expression_names: Optional[Dict[str, str]] = None) -> Optional[Dict[str, Any]]:
     """
     Update item in DynamoDB
     Args:
@@ -26,6 +26,7 @@ def update_tbl_dydb(
     """
 
     table = init_table(table_name=table_name)
+
     if not table:
         return
     update_params = {
@@ -51,11 +52,22 @@ def update_tbl_dydb(
 def is_dynamodb_reserved_keywords(attrs_name: str) -> bool:
     return attrs_name.upper() in DYNAMODB_RESERVED_KEYWORDS
 
-def set_update_expressions() -> Optional[str]:
+def set_expression_values(attr_inputs: str, value: Any) -> Optional[Dict[str, Any]]:
     try:
+        expression_values = {}
+
+        expression_values[f":{attr_inputs}"] = value
+
+        return expression_values
+    except Exception as e:
+        print(f"Error {e}")
+        return None
+
+def set_update_expressions(attr_inputs: str) -> Optional[str]:
+    try:
+        
         update_expression = "SET "
-        attributes_input = input("Please enter the attribute names to update (ie: ): ")
-        attributes_names = attributes_input.split(" ")
+        attributes_names = attr_inputs.split(" ")
 
         if not attributes_names:
             print("No attributes provided for update.")
@@ -82,15 +94,19 @@ def set_keys(
         user_input: bool=False, 
         key_names: Union[str, list]=None, 
         key_values: Union[str, list]=None) -> Optional[Dict[str, Any]]:
+    
     try:
         key = {}
         if not user_input:
-            if isinstance(key_names, str) and isinstance(key_names, str):
+            if isinstance(key_names, str) and isinstance(key_values, str):
                 key[key_names] = key_values
                 return key
-            elif isinstance(key_names, list) and isinstance(key_names, list):
+            elif isinstance(key_names, list) and isinstance(key_values, list):
                 if len(key_names) != len(key_values):
                     return
+                for name, value in zip(key_names, key_values):
+                    key[name] = value
+                return key
             else:
                 print("Invalid key names or values provided.")
                 return
