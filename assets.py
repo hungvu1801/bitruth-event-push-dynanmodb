@@ -29,9 +29,9 @@ DYNAMODB_RESERVED_KEYWORDS = {
 
 BINANCE_FEE_URL = "https://www.binance.com/bapi/capital/v2/public/capital/getNetworkCoinAll"
 
+BITRUTH_FEE_URL = "https://p-api.bitruth.com/api/v1/market/coin-fee"
 
-HEADERS = {
-    "Host": "www.binance.com",
+HEADERS_BINANCE = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0",
     "Accept": "*/*",
     "Accept-Language": "en-US,en;q=0.5",
@@ -51,5 +51,18 @@ HEADERS = {
     "Alt-Used": "www.bitget.com",
     "Priority": "u=0",
     "TE": "trailers"
+}
+
+HEADERS_BITRUTH = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0",
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Referer": "https://bitruth.com/",
+    "Origin": "https://bitruth.com",
+    "Connection": "keep-alive",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "cross-site"
 }
 
