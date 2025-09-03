@@ -88,26 +88,31 @@ class CollectDataBinance:
                 coin_base.coin_name = coin["name"]
                 
                 for network in coin["networkList"]:
-                    coin_base.network_short = network.get("network", "").strip()
-                    coin_base.network_full = network.get("name", "").strip()
-                    coin_base.minimum_deposit = network.get("depositDust", "").strip()
-                    coin_base.minimum_withdrawal = network.get("withdrawMin", "").strip()
-                    coin_base.deposit_fee = network.get("depositFee", "").strip()
-                    coin_base.withdrawal_fee = network.get("withdrawFee", "").strip()
-                    coin_base.denomination = network.get("denomination", "").strip()
-                    
-                    for coin_bitruth in coins_bitruth:
-                        if (coin_base.coin_symbol == coin_bitruth.coin_symbol and coin_base.network_short == coin_bitruth.network_short):
-                            if (coin_base.minimum_deposit != coin_bitruth.minimum_deposit or 
-                                coin_base.minimum_withdrawal != coin_bitruth.minimum_withdrawal or
-                                coin_base.deposit_fee != coin_bitruth.deposit_fee or
-                                coin_base.withdrawal_fee != coin_bitruth.withdrawal_fee):
+                    try:
+                        coin_base.network_short = network.get("network", "").strip()
+                        coin_base.network_full = network.get("name", "").strip()
+                        coin_base.minimum_deposit = (network.get("depositDust") or "").strip()
+                        coin_base.minimum_withdrawal = network.get("withdrawMin", "").strip()
+                        coin_base.deposit_fee = network.get("depositFee", "").strip()
+                        coin_base.withdrawal_fee = network.get("withdrawFee", "").strip()
+                        coin_base.denomination = network.get("denomination", "").strip()
+                        
+                        for coin_bitruth in coins_bitruth:
+                            if (coin_base.coin_symbol == coin_bitruth.coin_symbol and coin_base.network_short == coin_bitruth.network_short):
+                                if (coin_base.minimum_deposit != coin_bitruth.minimum_deposit or 
+                                    coin_base.minimum_withdrawal != coin_bitruth.minimum_withdrawal or
+                                    coin_base.deposit_fee != coin_bitruth.deposit_fee or
+                                    coin_base.withdrawal_fee != coin_bitruth.withdrawal_fee):
 
-                                next_empty_row = last_row + 1
-                                range_name = f"{self.title}!A{next_empty_row}"
-                                data = [coin_base.get_datas()]
-                                self.gwrite.write_to_gsheet(data=data, range_name=range_name)
-                                last_row = next_empty_row
+                                    next_empty_row = last_row + 1
+                                    range_name = f"{self.title}!A{next_empty_row}"
+                                    data = [coin_base.get_datas()]
+                                    self.gwrite.write_to_gsheet(data=data, range_name=range_name)
+                                    last_row = next_empty_row
+                    except Exception as e:
+                        print(f"Error in write_records_into_sheet: {e}")
+                        print(network)
+                        continue
         except StopIteration:
             return  # Generator exhausted
         except Exception as e:
